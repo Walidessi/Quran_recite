@@ -100,12 +100,17 @@ h3{font-size:14px;margin:14px 2px 4px;color:var(--mut);font-weight:600}
 .opt.bad{background:var(--badbg);border-color:var(--bad)}
 @font-face{font-family:"KFGQPC Warsh";src:url("https://cdn.jsdelivr.net/gh/thetruetruth/quran-data-kfgqpc@main/warsh/font/warsh.10.woff2") format("woff2");font-display:swap}
 #text.warsh,.q-ay.warsh,.opt.warsh{font-family:"KFGQPC Warsh","Amiri",serif}
+#text.warsh{line-height:2.9;word-spacing:.35em}
+#text.warsh .w{padding:4px 8px;margin:2px 4px}
+.q-ay.warsh,.opt.warsh{line-height:2.6;word-spacing:.3em}
 .tools button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 #text.tjon .tj{color:var(--tj)}
 #text.tjon .w.ok .tj,#text.tjon .w.wrong .tj,#text.tjon .w.missed .tj{color:inherit}
 #text .w.hid .tj{color:transparent !important}
 .lg{display:flex;align-items:flex-start;gap:8px;margin:6px 0;font-size:13.5px;line-height:1.35}
 .lg i{flex:none;width:14px;height:14px;border-radius:50%;margin-top:2px;border:1px solid var(--line)}
+[hidden]{display:none !important}
+a.btn{display:block;text-align:center;text-decoration:none}
 main{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
 #view-rec{padding-bottom:calc(200px + env(safe-area-inset-bottom))}
 .bar{bottom:calc(58px + env(safe-area-inset-bottom));padding-bottom:10px}
@@ -159,6 +164,7 @@ main{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
   <div id="title"></div>
   <div id="text" class="rtl"><span style="color:var(--mut);font-size:16px;font-family:system-ui">Choisis un texte ci-dessus pour commencer.</span></div>
   <div id="live"></div>
+  <a id="wlink" class="btn ghost" href="https://fr.assabile.com/telecharger-le-coran-pdf/tajwid-warsh" target="_blank" rel="noopener" hidden>📖 Mushaf Warsh avec tajwid en couleurs</a>
   <details id="tjleg" hidden>
     <summary>Légende du tajwid</summary>
     <div class="pad" id="tjlist"></div>
@@ -658,7 +664,7 @@ $("#tjb").onclick=()=>{
     setRiw("hafs"); $("#sura").value=curRef.n; $("#from").value=curRef.from; $("#to").value=curRef.to;
     loadQuran();
   }else if(curRef&&curRef.r==="warsh"){
-    toast("Le tajwid coloré est disponible seulement en Hafs.");
+    toast("Pas de tajwid coloré en Warsh dans l'appli : ouvre le mushaf Warsh avec tajwid sous le texte.");
   }else{
     toast(TJ?"Tajwid activé : il apparaîtra au prochain chargement d'une sourate.":"Tajwid désactivé.");
   }
@@ -669,6 +675,7 @@ $("#tjb").onclick=()=>{
 try{ RIW=localStorage.getItem("recite.riw")==="warsh"?"warsh":"hafs"; }catch(_){}
 function setRiw(r){
   RIW=r; try{ localStorage.setItem("recite.riw",r); }catch(_){}
+  $("#wlink").hidden=r!=="warsh";
   document.querySelectorAll("#riw button").forEach(b=>b.classList.toggle("on",b.dataset.r===r));
   $("#riwnote").textContent=r==="warsh"?"Warsh ʿan Nāfiʿ, texte du Complexe du Roi Fahd. Le nombre de versets peut différer du Hafs. La voix du navigateur est surtout réglée pour le Hafs : en Warsh elle peut se tromper sur des mots justes.":"";
 }
