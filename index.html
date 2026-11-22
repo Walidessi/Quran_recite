@@ -131,6 +131,7 @@ main{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
         <label>Riwaya</label>
         <div class="tabs" id="riw"><button data-r="hafs" class="on">Hafs</button><button data-r="warsh">Warsh</button></div>
         <p class="note" id="riwnote"></p>
+        <button class="btn ghost" id="magb" hidden style="margin:0 0 10px"></button>
         <div id="wfix" hidden>
           <p class="note">Le texte Warsh n'a pas pu être chargé automatiquement. Tu peux importer un fichier JSON du Warsh (KFGQPC) depuis tes Fichiers.</p>
           <label class="btn ghost" style="display:block;text-align:center;cursor:pointer">Importer un fichier Warsh (.json)<input type="file" id="wfile" accept=".json,application/json" hidden></label>
@@ -429,7 +430,7 @@ function stripBasmala(text,n,ay){
   return text;
 }
 const AYC={}, TJC={};
-let RIW="hafs", WDATA=null, WPROM=null, TJ=false, hasTj=false;
+let RIW="hafs", WDATA=null, WPROM=null, TJ=false, hasTj=false, MAG=false;
 const TJR={
  h:{c:"#AAAAAA",n:"Hamzat al-wasl",d:"hamza non prononcée au milieu de la phrase"},
  s:{c:"#AAAAAA",n:"Lettre muette",d:"lettre non prononcée"},
@@ -597,7 +598,7 @@ async function loadQuran(){
   const items=ayahs.filter(a=>a.ay>=from&&a.ay<=to).map(a=>tjItems?stripBasmalaTj(a,n):({ay:a.ay,text:stripBasmala(a.text,n,a.ay)})).filter(a=>norm(a.text));
   hasTj=!!tjItems;
   setText(items,"ar-SA",s.en+" ("+s.ar+") "+from+"–"+to+(rw==="warsh"?" · Warsh":""),(rw==="warsh"?"w":"q")+n+":"+from+"-"+to);
-  $("#text").classList.toggle("warsh",rw==="warsh"); LOOSE=(rw==="warsh"); applyTj();
+  $("#text").classList.toggle("warsh",rw==="warsh"&&MAG); LOOSE=(rw==="warsh"); applyTj();
   curRef={n,from,to,r:rw}; showTab("rec");
   $("#setup").open=false;
 }
@@ -671,11 +672,20 @@ $("#tjb").onclick=()=>{
   applyTj();
 };
 
+/* ---------- Écriture du Warsh ---------- */
+try{ MAG=localStorage.getItem("recite.mag")==="1"; }catch(_){}
+function magLabel(){ $("#magb").textContent=MAG?"Écriture maghrébine (touche pour l'écriture habituelle)":"Écriture habituelle (touche pour l'écriture maghrébine)"; }
+$("#magb").onclick=()=>{
+  MAG=!MAG; try{ localStorage.setItem("recite.mag",MAG?"1":"0"); }catch(_){}
+  if(curRef&&curRef.r==="warsh") $("#text").classList.toggle("warsh",MAG);
+  magLabel();
+};
+
 /* ---------- Riwaya : Hafs / Warsh ---------- */
 try{ RIW=localStorage.getItem("recite.riw")==="warsh"?"warsh":"hafs"; }catch(_){}
 function setRiw(r){
   RIW=r; try{ localStorage.setItem("recite.riw",r); }catch(_){}
-  $("#wlink").hidden=r!=="warsh";
+  $("#wlink").hidden=r!=="warsh"; $("#magb").hidden=r!=="warsh"; magLabel();
   document.querySelectorAll("#riw button").forEach(b=>b.classList.toggle("on",b.dataset.r===r));
   $("#riwnote").textContent=r==="warsh"?"Warsh ʿan Nāfiʿ, texte du Complexe du Roi Fahd. Le nombre de versets peut différer du Hafs. La voix du navigateur est surtout réglée pour le Hafs : en Warsh elle peut se tromper sur des mots justes.":"";
 }
@@ -821,9 +831,9 @@ function nextQ(){
   cands=shuffle(cands.filter((t,i,arr)=>norm(t)!==key && norm(t)!==norm(it.q) && arr.findIndex(u=>norm(u)===norm(t))===i));
   const opts=shuffle([it.a].concat(cands.slice(0,3)));
   const b=$("#qbody"); b.innerHTML="";
-  const q=el("div","q-ay"+(it.r==="warsh"?" warsh":""),clip(it.q,14,true)); b.append(q);
+  const q=el("div","q-ay"+(it.r==="warsh"&&MAG?" warsh":""),clip(it.q,14,true)); b.append(q);
   opts.forEach(t=>{
-    const o=el("button","opt"+(it.r==="warsh"?" warsh":""),clip(t,10,false));
+    const o=el("button","opt"+(it.r==="warsh"&&MAG?" warsh":""),clip(t,10,false));
     o.onclick=()=>{
       if(qs.locked) return; qs.locked=true;
       const ok=norm(t)===key;
